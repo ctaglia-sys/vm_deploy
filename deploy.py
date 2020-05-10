@@ -1,18 +1,3 @@
-"""
-
-virsh shutdown flatcar-linux1
-virsh undefine flatcar-linux1
-
-cd /var/lib/libvirt/images/flatcar-linux
-rm flatcar-linux1.qcow2
-qemu-img create -f qcow2 -b flatcar_production_qemu_image.img flatcar-linux1.qcow2
-virsh define /var/lib/libvirt/flatcar-linux/flatcar-linux1/domain.xml
-virsh start flatcar-linux1 
-virsh net-dhcp-leases default | grep $VM_HOSTNAME |awk '{print $5}' |cut -d '/' -f1
-
-"""
-
-
 
 import sys
 import os
@@ -94,8 +79,8 @@ def vm_xml_definition_filename(xml_definition_filename, vm_name, vm_image_path):
 
   p = subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
   (out,err) = p.communicate()
+  print(err)
   if err:
-    print(err)
     frameinfo = getframeinfo(currentframe())
     print_error(frameinfo)
     raise Exception
@@ -158,27 +143,6 @@ def define_vm(xml_definition_filename, vm_name):
                   "define",
                    xml_definition_filename]
 
-  command_start_vm = [
-                  "virsh",
-                  "start",
-                  vm_name
-                ]
-
-  # command_get_ip = [
-  #                   "virsh", 
-  #                   "net-dhcp-leases", 
-  #                   "default " 
-  #                   "grep", 
-  #                   vm_name, 
-  #                   "|", 
-  #                   "awk '{print $5}'", 
-  #                   "|", 
-  #                   "cut -d '/' -f1" 
-  #                 ]
-
-  # print(command_define)
-  # # if no_esta_definida
-
   p = subprocess.Popen(command_define,stdout=subprocess.PIPE, 
                       stderr=subprocess.PIPE, universal_newlines=True)
   (out,err) = p.communicate()
@@ -189,7 +153,13 @@ def define_vm(xml_definition_filename, vm_name):
     print_error(frameinfo)
     raise Exception
   print("%s definida" % vm_name)
+  return True
 
+def start_vm(vm_name):
+  command_start_vm = [
+                    "virsh",
+                    "start",
+                    vm_name]
 
   p = subprocess.Popen(command_start_vm,stdout=subprocess.PIPE, 
                       stderr=subprocess.PIPE, universal_newlines=True)
@@ -201,18 +171,6 @@ def define_vm(xml_definition_filename, vm_name):
     print_error(frameinfo)
     raise Exception
   print("%s Arrancada" % vm_name)
-
-  # print(command_get_ip)
-  # p = subprocess.Popen(command_get_ip,stdout=subprocess.PIPE, 
-  #                     stderr=subprocess.PIPE, universal_newlines=True)
-  # (out,err) = p.communicate()
-  # if err:
-  #   print(err)
-  #   frameinfo = getframeinfo(currentframe())
-  #   print_error(frameinfo)
-  #   raise Exception
-  # print("%s IP" % out)
-
 
 if __name__ == '__main__':
 
@@ -248,12 +206,14 @@ if __name__ == '__main__':
     # set_ingition_file(ignition_definition_filename)
     ret = set_ingition_file(ignition_definition_filename)
 
+  # # 5. define
   if ret:
     print("---------- ignition file: ok ----------")
     # define_vm(xml_definition_filename, vm_name)
     ret = define_vm(cfg.VM_PATH + cfg.VM_NAME + '.xml', cfg.VM_NAME)
 
-  # # 5. define
+  # # 6. start
   if ret:
+    start_vm(cfg.VM_NAME)
     print("---------- %s started ----------" % cfg.VM_NAME)
   
