@@ -1,0 +1,18 @@
+# Libvirt
+LIBVIRT_PATH = '/var/lib/libvirt/'
+LIBVIRT_IMAGE_PATH = LIBVIRT_PATH + 'images/'
+
+# Nueva VM
+VM_NAME = "vm_name"
+VM_PATH = LIBVIRT_IMAGE_PATH + VM_NAME + '/'
+
+RAM="512"
+VCPUS="1"
+MACADDRESS=""
+
+HOSTNAME = "hostname"
+IPADDRESS = '192.168.122.30'
+GATEWAY = '192.168.122.1'
+DNS = '8.8.8.8'
+USERNAME = "root"
+SSHRSA = ""
